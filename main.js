@@ -47,7 +47,6 @@ function move(direction) {
   else if (direction === "ArrowLeft") moveLeft();
   else if (direction === "ArrowRight") moveRight();
   resizeCanvas();
-  paintPlayer();
   onExit();
   onCollition();
 }
@@ -115,6 +114,7 @@ function paintCanvas() {
   if (!totalBombs) {
     totalBombs = bombs.length;
   }
+  paintPlayer();
 }
 
 function paintPlayer() {
