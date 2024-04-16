@@ -1,11 +1,18 @@
 const canvas = document.querySelector("#game");
 const game = canvas.getContext("2d");
+let level = 0;
 let canvasSize;
 let elementSize;
 const playerPosition = {
   x: undefined,
   y: undefined,
 };
+const exitPosition = {
+  x: undefined,
+  y: undefined,
+};
+const bombs = [];
+let totalBombs = undefined;
 
 window.addEventListener("load", resizeCanvas);
 window.addEventListener("resize", resizeCanvas);
@@ -17,47 +24,60 @@ left?.addEventListener("click", () => move("ArrowLeft"));
 right?.addEventListener("click", () => move("ArrowRight"));
 down?.addEventListener("click", () => move("ArrowDown"));
 
+function onExit() {
+  if (
+    playerPosition.x === exitPosition.x &&
+    playerPosition.y === exitPosition.y
+  ) {
+    console.info("Next level!!!");
+  }
+}
+
+function onCollition() {
+  bombs.forEach((bomb) => {
+    if (playerPosition.x === bomb.x && playerPosition.y === bomb.y) {
+      console.error("🔥");
+    }
+  });
+}
+
 function move(direction) {
   if (direction === "ArrowUp") moveUp();
   else if (direction === "ArrowDown") moveDown();
   else if (direction === "ArrowLeft") moveLeft();
   else if (direction === "ArrowRight") moveRight();
+  resizeCanvas();
+  paintPlayer();
+  onExit();
+  onCollition();
 }
 
 function moveUp() {
   if (playerPosition.y > 1) {
     playerPosition.y--;
   }
-  resizeCanvas();
-  paintPlayer();
 }
 
 function moveDown() {
   if (playerPosition.y <= 9) {
     playerPosition.y++;
   }
-  resizeCanvas();
-  paintPlayer();
 }
 
 function moveLeft() {
   if (playerPosition.x > 0) {
     playerPosition.x--;
   }
-  resizeCanvas();
-  paintPlayer();
 }
 
 function moveRight() {
   if (playerPosition.x < 9) {
     playerPosition.x++;
   }
-  resizeCanvas();
-  paintPlayer();
 }
 
 function paintCanvas() {
-  const map = maps[0]
+  const map = maps[level]
     .trim()
     .split("\n")
     .map((row) => row.trim().split(""));
@@ -79,7 +99,21 @@ function paintCanvas() {
           paintPlayer();
         }
       }
+      if (map[row - 1][col] === "I") {
+        if (!exitPosition.x && !exitPosition.y) {
+          exitPosition.x = col;
+          exitPosition.y = row;
+        }
+      }
+      if (map[row - 1][col] === "X") {
+        if (!totalBombs) {
+          bombs.push({ x: col, y: row });
+        }
+      }
     }
+  }
+  if (!totalBombs) {
+    totalBombs = bombs.length;
   }
 }
 
