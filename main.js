@@ -11,7 +11,7 @@ const exitPosition = {
   x: undefined,
   y: undefined,
 };
-const bombs = [];
+let bombs = [];
 let totalBombs = undefined;
 
 window.addEventListener("load", resizeCanvas);
@@ -24,12 +24,17 @@ left?.addEventListener("click", () => move("ArrowLeft"));
 right?.addEventListener("click", () => move("ArrowRight"));
 down?.addEventListener("click", () => move("ArrowDown"));
 
-function onExit() {
+function onWin() {
   if (
     playerPosition.x === exitPosition.x &&
-    playerPosition.y === exitPosition.y
+    playerPosition.y === exitPosition.y &&
+    level < maps.length - 1
   ) {
-    console.info("Next level!!!");
+    level++;
+    bombs = [];
+    totalBombs = undefined;
+    exitPosition.x = undefined;
+    exitPosition.y = undefined;
   }
 }
 
@@ -37,6 +42,8 @@ function onCollition() {
   bombs.forEach((bomb) => {
     if (playerPosition.x === bomb.x && playerPosition.y === bomb.y) {
       console.error("🔥");
+      playerPosition.x = undefined;
+      playerPosition.y = undefined;
     }
   });
 }
@@ -46,9 +53,9 @@ function move(direction) {
   else if (direction === "ArrowDown") moveDown();
   else if (direction === "ArrowLeft") moveLeft();
   else if (direction === "ArrowRight") moveRight();
-  resizeCanvas();
-  onExit();
+  onWin();
   onCollition();
+  resizeCanvas();
 }
 
 function moveUp() {
