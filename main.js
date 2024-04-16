@@ -1,6 +1,13 @@
 const canvas = document.querySelector("#game");
+const up = document.querySelector("#up");
+const down = document.querySelector("#down");
+const left = document.querySelector("#left");
+const right = document.querySelector("#right");
+const userLives = document.querySelector("#lives");
+
 const game = canvas.getContext("2d");
 let level = 0;
+let lives = 3;
 let canvasSize;
 let elementSize;
 const playerPosition = {
@@ -12,6 +19,7 @@ const exitPosition = {
   y: undefined,
 };
 let bombs = [];
+let collisions = [];
 let totalBombs = undefined;
 
 window.addEventListener("load", resizeCanvas);
@@ -31,19 +39,31 @@ function onWin() {
     level < maps.length - 1
   ) {
     level++;
+    lives = 3;
     bombs = [];
+    collisions = [];
     totalBombs = undefined;
     exitPosition.x = undefined;
     exitPosition.y = undefined;
   }
 }
 
-function onCollition() {
+function onCollision() {
   bombs.forEach((bomb) => {
     if (playerPosition.x === bomb.x && playerPosition.y === bomb.y) {
-      console.error("🔥");
+      collisions.push(bomb);
       playerPosition.x = undefined;
       playerPosition.y = undefined;
+
+      if (lives > 0) {
+        lives--;
+      } else {
+        level = 0;
+        lives = 3;
+        bombs = [];
+        totalBombs = undefined;
+        collisions = [];
+      }
     }
   });
 }
@@ -54,7 +74,7 @@ function move(direction) {
   else if (direction === "ArrowLeft") moveLeft();
   else if (direction === "ArrowRight") moveRight();
   onWin();
-  onCollition();
+  onCollision();
   resizeCanvas();
 }
 
@@ -82,6 +102,14 @@ function moveRight() {
   }
 }
 
+function displayLives() {
+  const hearts = Array(lives).fill("💟");
+  userLives.innerHTML = "";
+  hearts.forEach((heart) => {
+    userLives.append(heart);
+  });
+}
+
 function paintCanvas() {
   const map = maps[level]
     .trim()
@@ -90,6 +118,7 @@ function paintCanvas() {
 
   game.font = elementSize + "px Verdana";
 
+  displayLives();
   for (let row = 1; row <= 10; row++) {
     for (let col = 0; col < 10; col++) {
       game.fillText(
@@ -112,6 +141,13 @@ function paintCanvas() {
         }
       }
       if (map[row - 1][col] === "X") {
+        collisions.forEach((collision) => {
+          game.fillText(
+            emojis["BOMB_COLLISION"],
+            elementSize * collision.x,
+            elementSize * collision.y
+          );
+        });
         if (!totalBombs) {
           bombs.push({ x: col, y: row });
         }
