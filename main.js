@@ -5,6 +5,7 @@ const left = document.querySelector("#left");
 const right = document.querySelector("#right");
 const userLives = document.querySelector("#lives");
 const userTime = document.querySelector("#time");
+const bestTime = document.querySelector("#record");
 
 const game = canvas.getContext("2d");
 let level = 0;
@@ -25,7 +26,6 @@ let totalBombs = undefined;
 let timeStart = undefined;
 let timeInterval;
 
-
 window.addEventListener("load", resizeCanvas);
 window.addEventListener("resize", resizeCanvas);
 
@@ -39,7 +39,7 @@ down?.addEventListener("click", () => move("ArrowDown"));
 function onWin() {
   if (
     playerPosition.x === exitPosition.x &&
-    playerPosition.y === exitPosition.y 
+    playerPosition.y === exitPosition.y
   ) {
     lives = 3;
     bombs = [];
@@ -47,11 +47,20 @@ function onWin() {
     totalBombs = undefined;
     exitPosition.x = undefined;
     exitPosition.y = undefined;
-    if(level < maps.length -1){
-      level ++
-    }
-    else if(level === maps.length - 1){
+    if (level < maps.length - 1) {
+      level++;
+    } else if (level === maps.length - 1) {
       clearInterval(timeInterval);
+
+      if (localStorage.getItem("record")) {
+        let best = parseInt(localStorage.getItem("record").split(":").join(""));
+        let actual = parseInt(userTime.innerHTML.split(":").join(""));
+        if (actual < best) {
+          localStorage.setItem("record", userTime.innerHTML);
+        }
+      } else {
+        localStorage.setItem("record", userTime.innerHTML);
+      }
     }
   }
 }
@@ -78,8 +87,12 @@ function onCollision() {
 }
 
 function printTime() {
-  let msec = parseInt(((Date.now() - timeStart)/1000).toString().split('.')[1])
-  let sec = parseInt(((Date.now() - timeStart)/1000).toString().split('.')[0])
+  let msec = parseInt(
+    ((Date.now() - timeStart) / 1000).toString().split(".")[1]
+  );
+  let sec = parseInt(
+    ((Date.now() - timeStart) / 1000).toString().split(".")[0]
+  );
 
   userTime.innerHTML = `${sec}:${msec}`;
 }
@@ -139,6 +152,8 @@ function paintCanvas() {
     timeStart = Date.now();
     timeInterval = setInterval(printTime, 100);
   }
+
+  bestTime.innerHTML = localStorage.getItem("record") ?? "--:---";
 
   for (let row = 1; row <= 10; row++) {
     for (let col = 0; col < 10; col++) {
