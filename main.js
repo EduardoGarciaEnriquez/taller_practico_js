@@ -4,6 +4,7 @@ const down = document.querySelector("#down");
 const left = document.querySelector("#left");
 const right = document.querySelector("#right");
 const userLives = document.querySelector("#lives");
+const userTime = document.querySelector("#time");
 
 const game = canvas.getContext("2d");
 let level = 0;
@@ -21,6 +22,9 @@ const exitPosition = {
 let bombs = [];
 let collisions = [];
 let totalBombs = undefined;
+let timeStart = undefined;
+let timeInterval;
+
 
 window.addEventListener("load", resizeCanvas);
 window.addEventListener("resize", resizeCanvas);
@@ -35,16 +39,20 @@ down?.addEventListener("click", () => move("ArrowDown"));
 function onWin() {
   if (
     playerPosition.x === exitPosition.x &&
-    playerPosition.y === exitPosition.y &&
-    level < maps.length - 1
+    playerPosition.y === exitPosition.y 
   ) {
-    level++;
     lives = 3;
     bombs = [];
     collisions = [];
     totalBombs = undefined;
     exitPosition.x = undefined;
     exitPosition.y = undefined;
+    if(level < maps.length -1){
+      level ++
+    }
+    else if(level === maps.length - 1){
+      clearInterval(timeInterval);
+    }
   }
 }
 
@@ -63,9 +71,17 @@ function onCollision() {
         bombs = [];
         totalBombs = undefined;
         collisions = [];
+        timeStart = undefined;
       }
     }
   });
+}
+
+function printTime() {
+  let msec = parseInt(((Date.now() - timeStart)/1000).toString().split('.')[1])
+  let sec = parseInt(((Date.now() - timeStart)/1000).toString().split('.')[0])
+
+  userTime.innerHTML = `${sec}:${msec}`;
 }
 
 function move(direction) {
@@ -119,6 +135,11 @@ function paintCanvas() {
   game.font = elementSize + "px Verdana";
 
   displayLives();
+  if (!timeStart) {
+    timeStart = Date.now();
+    timeInterval = setInterval(printTime, 100);
+  }
+
   for (let row = 1; row <= 10; row++) {
     for (let col = 0; col < 10; col++) {
       game.fillText(
@@ -154,9 +175,11 @@ function paintCanvas() {
       }
     }
   }
+
   if (!totalBombs) {
     totalBombs = bombs.length;
   }
+
   paintPlayer();
 }
 
